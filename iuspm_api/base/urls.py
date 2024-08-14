@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
+from . import views
 
 app_name = "base"
 
@@ -11,4 +12,5 @@ router = routers.SimpleRouter()
 
 urlpatterns = [
     path(f"{app_name}", include(router.urls)),
+    path("api/v1/generate", views.generate_transcript_pdf),
 ]

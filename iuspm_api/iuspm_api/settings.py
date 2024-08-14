@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",
     # django apps
     "base.apps.BaseConfig",
-    "notes.apps.NotesConfig",
+    "note.apps.NoteConfig",
     "planning.apps.PlanningConfig",
     "django.contrib.admin",
     "django.contrib.auth",
