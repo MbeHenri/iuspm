@@ -22,8 +22,8 @@ urlpatterns = [
     # base
     path("admin/", admin.site.urls),
     path("base/", include("base.urls")),
-    path("note/", include("note.urls")),
-    path("planning/", include("planning.urls")),
+    # path("note/", include("note.urls")),
+    # path("planning/", include("planning.urls")),
     # api
     path("api-auth/", include("rest_framework.urls")),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),

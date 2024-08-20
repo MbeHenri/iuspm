@@ -1,116 +1,89 @@
+# from django.shortcuts import render
+from datetime import datetime
+import json
 from django.http import HttpResponse
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
-def test(request):
-    return "Hello world"
+# from rest_framework.views import APIView
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 
-def generate_transcript_pdf(request):
-    # Créer une réponse HTTP avec un type de contenu PDF
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = 'attachment; filename="transcript.pdf"'
+from base.generate.rn import year as rn_total, semester as rn_semester
+from base.models import SchoolYear, Student
+from base.serializers import StudentSerializer
+from base.utils.other import get_student_notes
 
-    # Créer le PDF
-    doc = SimpleDocTemplate(response, pagesize=A4)
-    elements = []
 
-    # Styles
-    styles = getSampleStyleSheet()
+class StudentViewSet(viewsets.ModelViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
 
-    # En-tête du document
-    header = [
-        Paragraph("REPUBLIQUE DU CAMEROUN", styles["Title"]),
-        Paragraph(
-            "INSTITUT UNIVERSITAIRE DES SCIENCES PÉTROLIÈRES ET DE MANAGEMENT",
-            styles["Title"],
-        ),
-        Paragraph("RELEVE DE NOTES / TRANSCRIPT", styles["Title"]),
-        Paragraph("Année Académique 2020 - 2021", styles["Title"]),
-    ]
-    elements.extend(header)
-    elements.append(Spacer(1, 12))
+    @action(detail=True, methods=["get"], url_path="rn/(?P<year>\d{4})")
+    def rn(self, request, pk=None, year=None):
+        try:
+            # Récupération de l'étudiant à partir de son id
+            student = self.get_object()
 
-    # Informations de l'étudiant
-    student_info = [
-        "Nom et Prénom: [Nom Etudiant]",
-        "Matricule: [Matricule]",
-        "Parcours: Commerce et Gestion",
-        "Niveau: 4",
-    ]
-    for info in student_info:
-        elements.append(Paragraph(info, styles["Normal"]))
-    elements.append(Spacer(1, 12))
+            # Récupération de ses notes pour un semestre donné ou pour tous les semestres durant l'année donnée
+            datas = get_student_notes(
+                student,
+                int(year) if year else datetime.now().year,
+            )
 
-    # Tableau des notes
-    data = [
-        [
-            "Code UE",
-            "Code EC",
-            "Intitulé de l'UE",
-            "Note /20",
-            "GRA",
-            "Crédit",
-            "Déc",
-            "TRA",
-            "SES",
-            "Année",
-        ],
-        [
-            "MDC111",
-            "MARKETING 1",
-            "Comportement du consommateur",
-            "12.55",
-            "C",
-            "3",
-            "AC",
-            "O",
-            "N",
-            "2020/2021",
-        ],
-        # Ajoutez d'autres lignes ici...
-    ]
+            # creation de la reponse
+            response = HttpResponse(content_type="application/pdf")
 
-    # Style du tableau
-    table = Table(data)
-    table.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
-                ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ]
-        )
+            # Construction du relevé de notes
+            rn_total.RN(student, datas, response)
+
+            return response
+
+        except Student.DoesNotExist:
+            return HttpResponse(
+                json.dumps({"detail": "Student not found"}),
+                status=status.HTTP_404_NOT_FOUND,
+                content_type="json",
+            )
+        except SchoolYear.DoesNotExist:
+            return HttpResponse(
+                json.dumps({"detail": "Transcript is not available for tnis year"}),
+                status=status.HTTP_405_METHOD_NOT_ALLOWED,
+                content_type="json",
+            )
+
+    @action(
+        detail=True, methods=["get"], url_path="rn/(?P<year>\d{4})/(?P<semester>[12])"
     )
-    elements.append(table)
-    elements.append(Spacer(1, 12))
+    def rn_semester(self, request, pk=None, year=None, semester=None):
+        try:
+            # Récupération de l'étudiant à partir de son id
+            student = self.get_object()
 
-    # Informations sur les crédits et la moyenne
-    summary = [
-        "Total Crédit: 53/60",
-        "Moyenne annuelle: 10,42 / 20",
-        "Mention: Passable",
-        "Grade: C",
-    ]
-    for info in summary:
-        elements.append(Paragraph(info, styles["Normal"]))
-    elements.append(Spacer(1, 12))
+            # Récupération de ses notes pour un semestre donné ou pour tous les semestres durant l'année donnée
+            print("semester ", semester)
+            datas = get_student_notes(
+                student,
+                int(year) if year else datetime.now().year,
+                semester=int(semester) if semester else None,
+            )
 
-    # Signatures
-    signatures = [
-        "Douala, le 03 AVR 2021",
-        "Le Président-Rector de l'Institut: [Nom]",
-        "Le Doyen de la Faculté: [Nom]",
-    ]
-    for sign in signatures:
-        elements.append(Paragraph(sign, styles["Normal"]))
+            # creation de la reponse
+            response = HttpResponse(content_type="application/pdf")
 
-    # Générer le PDF
-    doc.build(elements)
+            # Construction du relevé de notes
+            rn_semester.RN(student, datas, response)
 
-    return response
+            return response
+
+        except Student.DoesNotExist:
+            return HttpResponse(
+                json.dumps({"detail": "Student not found"}),
+                status=status.HTTP_404_NOT_FOUND,
+                content_type="json",
+            )
+
+        except SchoolYear.DoesNotExist:
+            return HttpResponse(
+                json.dumps({"detail": "Transcript is not available for tnis year"}),
+                status=status.HTTP_405_METHOD_NOT_ALLOWED,
+                content_type="json",
+            )

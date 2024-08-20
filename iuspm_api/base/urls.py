@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
-from . import views
+from base.views import StudentViewSet
 
 app_name = "base"
 
@@ -8,9 +8,8 @@ app_name = "base"
 router = routers.SimpleRouter()
 
 # register of view set of API view
-# router.register("server", ServerViewset, basename="server")
+router.register("student", StudentViewSet, basename="student")
 
 urlpatterns = [
-    path(f"{app_name}", include(router.urls)),
-    path("api/v1/generate", views.generate_transcript_pdf),
+    path("api/v1/", include(router.urls)),
 ]
