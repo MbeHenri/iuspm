@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import StudentSimple from "../../models/student";
+import { StudentSimple } from "../../models/student";
 import useService from "../../providers/Service/hooks";
 import { useLoading } from "../../utils/hooks";
 import {
-  Box,
   Heading,
   IconButton,
   Spinner,
@@ -16,16 +15,19 @@ import {
   Thead,
   Tr,
   VStack,
+  Link,
   useDisclosure,
+  Center,
 } from "@chakra-ui/react";
 import { FaBookReader } from "react-icons/fa";
 import { FormStudentRN } from "./form";
+import { Link as LinkRouter } from "react-router-dom";
 
 const StudentList = () => {
   const [students, setStudents] = useState<StudentSimple[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const [curentStudent, setCurentStudent] = useState<StudentSimple | null>(
+  const [currentStudent, setCurrentStudent] = useState<StudentSimple | null>(
     null
   );
 
@@ -53,7 +55,7 @@ const StudentList = () => {
   if (loading) {
     return (
       <>
-        <VStack mt="15vh">
+        <VStack>
           <Spinner />
           <Heading textAlign="center">Loading</Heading>
         </VStack>
@@ -64,19 +66,16 @@ const StudentList = () => {
   if (students.length === 0) {
     return (
       <>
-        <VStack mt="15vh">
-          <Text>No studentds found</Text>
-        </VStack>
+        <Center>
+          <Text>Aucun étudiant a été trouvé</Text>
+        </Center>
       </>
     );
   }
 
   return (
-    <Box mt="15vh">
-      <Heading as="h3" size="lg" marginBottom={"1rem"}>
-        Etudiants
-      </Heading>
-      <TableContainer w={"100%"}>
+    <>
+      <TableContainer>
         <Table size="sm">
           <Thead>
             <Tr>
@@ -91,7 +90,11 @@ const StudentList = () => {
             {students.map((st, i) => {
               return (
                 <Tr key={i}>
-                  <Td>{st.register}</Td>
+                  <Td>
+                    <Link as={LinkRouter} to={`/student/${st.uuid}`}>
+                      {st.register}
+                    </Link>
+                  </Td>
                   <Td>{st.name}</Td>
                   <Td>{`Niveau ${st.level}`}</Td>
                   <Td>{`${st.sector}`}</Td>
@@ -100,7 +103,7 @@ const StudentList = () => {
                       aria-label={"Releve" + i}
                       icon={<FaBookReader />}
                       onClick={() => {
-                        setCurentStudent(st);
+                        setCurrentStudent(st);
                         onOpen();
                       }}
                     />
@@ -111,13 +114,15 @@ const StudentList = () => {
           </Tbody>
         </Table>
       </TableContainer>
-      <FormStudentRN
-        currentStudent={curentStudent}
-        isOpen={isOpen}
-        onClose={onClose}
-        setCurentStudent={setCurentStudent}
-      />
-    </Box>
+      {currentStudent ? (
+        <FormStudentRN
+          student={currentStudent}
+          isOpen={isOpen}
+          onClose={onClose}
+          clearCurrentStudent={() => setCurrentStudent(null)}
+        />
+      ) : null}
+    </>
   );
 };
 

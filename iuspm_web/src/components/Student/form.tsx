@@ -18,62 +18,45 @@ import {
   Select,
 } from "@chakra-ui/react";
 import { useCallback, useRef, useState } from "react";
-import StudentSimple from "../../models/student";
+import { StudentSimple } from "../../models/student";
 import useService from "../../providers/Service/hooks";
 import { useLoading } from "../../utils/hooks";
 import { FaArrowLeft } from "react-icons/fa";
+import { Semester } from "../../models/note";
 
 interface Props {
-  currentStudent: StudentSimple | null;
+  student: StudentSimple;
   isOpen: boolean;
-  setCurentStudent: React.Dispatch<React.SetStateAction<StudentSimple | null>>;
+  clearCurrentStudent: () => void;
   onClose: () => void;
 }
 
 export const FormStudentRN: React.FC<Props> = ({
-  currentStudent,
+  student,
   isOpen,
   onClose,
-  setCurentStudent,
+  clearCurrentStudent,
 }) => {
   const initialRef = useRef(null);
   const finalRef = useRef(null);
 
-  const currentYear = new Date().getFullYear();
+  const defaultYear = new Date().getFullYear();
 
-  const [year, setYear] = useState<string>(`${new Date().getFullYear()}`);
+  const [year, setYear] = useState<string>(`${defaultYear}`);
   const [errorYear, setErrorYear] = useState<string | null>(null);
 
-  const handleChangeYear = useCallback(
-    (value: string) => {
-      // Vérifie si l'entrée est un nombre et s'il est compris entre 1900 et l'année en cours
-
-      setYear(value);
-      if (
-        /^\d{0,4}$/.test(value) &&
-        ((parseInt(value) >= 1900 && parseInt(value) <= currentYear) ||
-          value === "")
-      ) {
-        setErrorYear(null);
-      } else {
-        setErrorYear(
-          "Veuillez entrer une année valide entre 1900 et l'année en cours."
-        );
-      }
-    },
-    [currentYear]
-  );
+  const handleChangeYear = useCallback((value: string) => {
+    // Vérifie si l'entrée est un nombre et s'il est compris entre 1900 et l'année en cours
+    setYear(value);
+    if (/^\d{0,4}$/.test(value) && parseInt(value) >= 1900) {
+      setErrorYear(null);
+    } else {
+      setErrorYear("Veuillez entrer une année valide supérieur à 1900.");
+    }
+  }, []);
 
   const [semester, setSemester] = useState<string>(``);
   const [url, setUrl] = useState("");
-
-  const clearVariable = useCallback(() => {
-    onClose();
-    setCurentStudent(null);
-    setSemester("");
-    setYear(`${currentYear}`);
-    setUrl("");
-  }, [currentYear, onClose, setCurentStudent]);
 
   // chargement du service
   const { base } = useService();
@@ -81,28 +64,37 @@ export const FormStudentRN: React.FC<Props> = ({
   const { setLoading, loading } = useLoading();
 
   const handleSubmit = useCallback(() => {
-    if (currentStudent) {
-      if (!errorYear) {
-        setLoading(true);
-        base
-          .getRN(
-            currentStudent,
-            year,
-            semester === "" ? null : semester === "1" ? "1" : "2"
-          )
-          .then((data) => {
-            setUrl(data);
-          })
-          .catch((e) => {
-            console.log(e);
-          })
-          .finally(() => {
-            setLoading(false);
-          });
-      }
+    if (!errorYear) {
+      setLoading(true);
+      base
+        .getRN(
+          student,
+          year,
+          semester === ""
+            ? null
+            : parseInt(semester) === Semester.s1
+            ? Semester.s1
+            : Semester.s2
+        )
+        .then((data) => {
+          setUrl(data);
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
     return () => {};
-  }, [base, currentStudent, errorYear, semester, setLoading, year]);
+  }, [base, student, errorYear, semester, setLoading, year]);
+
+  const clearVariable = useCallback(() => {
+    if (!loading) {
+      onClose();
+      clearCurrentStudent();
+    }
+  }, [loading, onClose, clearCurrentStudent]);
 
   return (
     <>
@@ -143,12 +135,11 @@ export const FormStudentRN: React.FC<Props> = ({
             <>
               <ModalBody pb={6}>
                 <FormControl isInvalid={errorYear ? true : false}>
-                  <FormLabel>Année</FormLabel>
+                  <FormLabel>Année Académique (Début)</FormLabel>
                   <NumberInput
                     onChange={handleChangeYear}
                     value={year}
                     min={1900}
-                    max={currentYear}
                   >
                     <NumberInputField />
                     <NumberInputStepper>
@@ -170,8 +161,8 @@ export const FormStudentRN: React.FC<Props> = ({
                       setSemester(e.target.value);
                     }}
                   >
-                    <option value="1">Semestre 1</option>
-                    <option value="2">Semestre 2</option>
+                    <option value={`${Semester.s1}`}>Semestre 1</option>
+                    <option value={`${Semester.s2}`}>Semestre 2</option>
                   </Select>
                 </FormControl>
               </ModalBody>
