@@ -11,14 +11,21 @@ def get_student_speciality(student: Student, level: int | None = None):
     return Speciality.objects.get(sector=student.sector, level=niv)
 
 
-def get_student_notes(
+def truncate(number):
+    return int(number * 100) / 100.0
+
+
+def get_student_base_notes(
     student: Student,
-    year_number: int,
+    year_number: int | None = None,
     level: None | int = None,
     semester: None | int = None,
 ):
     # 1. Récupérer l'année scolaire en question
-    school_year = SchoolYear.objects.get(number=year_number)
+    if year_number is not None:
+        school_year = SchoolYear.objects.get(number=year_number)
+    else:
+        school_year = SchoolYear.objects.order_by("-number").first()
 
     # 2. Filtrer les UEs programmées pour l'année et pour la spécialité de l'étudiant
     niv = student.current_level
@@ -43,9 +50,22 @@ def get_student_notes(
     ecs = EC.objects.filter(ue__in=ues_programmed.values_list("ue", flat=True))
 
     # 4. Récupérer les notes
-    notes = Note.objects.filter(student=student, year=school_year, ec__in=ecs)
+    notes = Note.objects.filter(student=student, ec__in=ecs)
+    return school_year, niv, ues_programmed, ecs, notes
 
-    # 5. Structurer les résultats
+
+def get_student_notes(
+    student: Student,
+    year_number: int,
+    level: None | int = None,
+    semester: None | int = None,
+):
+    # 1. recupération des notes
+    school_year, niv, ues_programmed, ecs, notes = get_student_base_notes(
+        student, year_number, level, semester
+    )
+
+    # 2. Structurer les résultats
     can_grouping = True
     results = {}
     sum_credit = 0
@@ -67,14 +87,14 @@ def get_student_notes(
             result = {
                 "ec_code": ec.code,
                 "ec_label": ec.label,
-                "note_20": note.value / 5,
-                "note_100": note.value,
+                "note_20": truncate(note.value / 5),
+                "note_100": truncate(note.value),
                 "cred": ec.credit,
                 "session": "N" if note.is_normal else "R",
                 "dec": note.state,
                 "grade": note.grade,
                 "mgp": note.point,
-                "trans": "N" if note.state != "E" else "O",
+                "trans": "O" if note.state != "E" else "N",
                 "semester": semester,
                 "cc": note.cc,
                 "ef": note.ef,
@@ -110,7 +130,6 @@ def get_student_notes(
         cred_t = None if sum_credit == 0 else cred_t / sum_credit
 
         mgp_t = None if sum_credit == 0 else mgp_t / sum_credit
-        print("mgt ", mgp_t)
     else:
         moyenne_t = None
         cred_t = None
@@ -124,8 +143,63 @@ def get_student_notes(
         "level": niv,
         "credits": "-" if sum_credit == 0 else sum_credit,
         "credit_total": "-" if cred_t is None else cred_t,
-        "moy_total_20": "-" if moyenne_t is None else moyenne_t / 5,
-        "moy_total_100": "-" if moyenne_t is None else moyenne_t,
-        "mgp": "-" if mgp_t is None else mgp_t,
-        "grade": "-" if not moyenne_t else get_grade(moyenne_t / sum_credit),
+        "moy_total_20": "-" if moyenne_t is None else truncate(moyenne_t / 5),
+        "moy_total_100": "-" if moyenne_t is None else truncate(moyenne_t),
+        "mgp": "-" if mgp_t is None else truncate(mgp_t),
+        "grade": "-" if not moyenne_t else get_grade(moyenne_t),
     }
+
+
+def get_student_notes_2(
+    student: Student,
+    level: None | int = None,
+    semester: None | int = None,
+):
+    # 1. recupération des notes
+    _, _, ues_programmed, ecs, notes = get_student_base_notes(
+        student, None, level, semester
+    )
+
+    # 2. Structurer les résultats
+    results = []
+    for ec in ecs:
+        # Trouver le semestre associé à l'UE
+        semester = ues_programmed.get(ue=ec.ue).semester
+
+        # Ajouter la note avec le semestre correspondant
+        ue = ec.ue
+        try:
+            note = notes.get(ec=ec)
+            result = {
+                "id": note.id,
+                "cc": note.cc,
+                "ef": note.ef,
+                "updated_at": note.updated_at,
+                "is_normal": note.is_normal,
+                "ec": {
+                    "id": ec.id,
+                    "code": ec.code,
+                    "label": ec.label,
+                    "ue": {"code": ue.code, "label": ue.label},
+                },
+                "semester": semester,
+            }
+        except Exception:
+            result = {
+                "id": None,
+                "cc": None,
+                "ef": None,
+                "updated_at": None,
+                "is_normal": None,
+                "ec": {
+                    "id": ec.id,
+                    "code": ec.code,
+                    "label": ec.label,
+                    "ue": {"code": ue.code, "label": ue.label},
+                },
+                "semester": semester,
+            }
+
+        results.append(result)
+
+    return results

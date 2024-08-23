@@ -45,7 +45,7 @@ class UEProgrammingAdmin(admin.ModelAdmin):
 
 
 class NoteAdmin(admin.ModelAdmin):
-    list_display = ("student", "ue", "ec", "year", "state")
+    list_display = ("student", "ue", "ec", "state")
 
     @admin.display(description="UE code")
     def ue(self, obj):

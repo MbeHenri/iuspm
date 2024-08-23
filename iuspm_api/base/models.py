@@ -1,5 +1,5 @@
 from django.db import models
-from django.utils.timezone import now
+from django.utils import timezone
 
 from base.utils.enums import Levels, Semesters
 from base.utils.policy import get_cycle, get_grade, get_point, get_state
@@ -42,7 +42,7 @@ class Student(models.Model):
 
 
 class SchoolYear(models.Model):
-    number = models.IntegerField(unique=True, default=now().year)
+    number = models.IntegerField(unique=True, default=timezone.now().year)
 
     @property
     def label(self):
@@ -101,13 +101,10 @@ class Note(models.Model):
     cc = models.FloatField(default=0)  # note de cc sur 20
     ef = models.FloatField(default=0)  # note de session normal ou rattrapage sur 20
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="notes")
-    year = models.ForeignKey(
-        SchoolYear, on_delete=models.CASCADE, related_name="notesYear"
-    )
     ec = models.ForeignKey(EC, on_delete=models.CASCADE, related_name="notesEC")
     is_normal = models.BooleanField(default=True)
     inserted_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(default=now())
+    updated_at = models.DateTimeField(default=timezone.now)
 
     @property
     def value(self):  # note total sur 100

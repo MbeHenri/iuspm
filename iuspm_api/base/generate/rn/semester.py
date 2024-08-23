@@ -156,12 +156,17 @@ def RN(student: Student, notesData: dict, output):
     elements.append(Spacer(1, 12))
 
     # Informations de l'étudiant
+    styleinfos = ParagraphStyle(
+        name="",
+        fontSize=8,
+    )
+
     studentInfoTableData = [
         [
-            Paragraph("NOM ET PRENOM / Name & Surname :"),
-            Paragraph("MATRICULE :"),
-            Paragraph("NE LE :"),
-            Paragraph("A :"),
+            Paragraph("NOM ET PRENOM / Name & Surname :", styleinfos),
+            Paragraph("MATRICULE :", styleinfos),
+            Paragraph("NE LE :", styleinfos),
+            Paragraph("A :", styleinfos),
         ],
         [
             Paragraph(
@@ -191,20 +196,29 @@ def RN(student: Student, notesData: dict, output):
     speciality = get_student_speciality(student)
     studentInfoParTableData = [
         [
-            Paragraph("SPECIALITE : {}".format(speciality.label)),
-            Paragraph("PARCOURS : {}".format(student.sector.label)),
-            Paragraph("CYCLE : {}".format(student.cycle)),
+            Paragraph("SPECIALITE : {}".format(speciality.label), styleinfos),
+            Paragraph("PARCOURS : {}".format(student.sector.label), styleinfos),
+            Paragraph("CYCLE : {}".format(student.cycle), styleinfos),
         ],
         [
-            Paragraph("Speciality"),
-            Paragraph("Course"),
+            Paragraph("Speciality", styleinfos),
+            Paragraph("Course", styleinfos),
         ],
     ]
     studentInfoParTable = Table(
         studentInfoParTableData, colWidths=[8 * units.cm, 7 * units.cm, 3 * units.cm]
     )
+    studentInfoParTable.setStyle(
+        TableStyle(
+            [
+                ("TOPPADDING", (0, -1), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+            ]
+        )
+    )
     elements.append(studentInfoParTable)
 
+    # space
     elements.append(Spacer(1, 12))
 
     # Tableau des notes
@@ -240,8 +254,21 @@ def RN(student: Student, notesData: dict, output):
             "",
             Paragraph("Sur 20"),
             Paragraph("Sur 20"),
-            Paragraph("30% CC + 70% EF"),
-            Paragraph("Sur 100"),
+            Paragraph(
+                "30% CC 70% EF",
+                ParagraphStyle(
+                    name="",
+                    alignment=enums.TA_CENTER,
+                    fontSize=6,
+                ),
+            ),
+            Paragraph(
+                "Sur 100",
+                ParagraphStyle(
+                    name="",
+                    fontSize=8,
+                ),
+            ),
             Paragraph("COTE"),
             Paragraph("POINT"),
         ],
@@ -270,48 +297,40 @@ def RN(student: Student, notesData: dict, output):
         ("LINEABOVE", (3, 3), (-1, -1), 1, colors.black),
         # footer
         ("BACKGROUND", (0, -1), (-1, -1), colors.black),
-        ("SPAN", (0, -1), (5, -1)),
+        ("SPAN", (0, -1), (2, -1)),
+        ("LINEABOVE", (0, 3), (3, 3), 1, colors.black),
     ]
 
-    current_l = 2
-
+    current_l = 3
     for ue, ecs in notesData["ues"].items():
-        current_l += 1
-        data.append(
-            [
-                Paragraph(ue),
-                Paragraph(">>>>>>"),
-                Paragraph(ecs[0]["ec_label"]),
-                Paragraph("{}".format(ecs[0]["cred"])),
-                Paragraph("{}".format(ecs[0]["cc"])),
-                Paragraph("{}".format(ecs[0]["ef"])),
-                Paragraph("{}".format(ecs[0]["note_20"])),
-                Paragraph("{}".format(ecs[0]["note_100"])),
-                Paragraph(ecs[0]["grade"]),
-                Paragraph("{}".format(ecs[0]["mgp"])),
-            ],
-        )
-        try:
-            i = 1
-            while True:
-                data.append(
-                    [
-                        Paragraph(ue),
-                        Paragraph(">>>>>>"),
-                        Paragraph(ecs[i]["ec_label"]),
-                        Paragraph("{}".format(ecs[i]["cred"])),
-                        Paragraph("{}".format(ecs[i]["ec"])),
-                        Paragraph("{}".format(ecs[i]["ef"])),
-                        Paragraph("{}".format(ecs[i]["note_20"])),
-                        Paragraph("{}".format(ecs[i]["note_100"])),
-                        Paragraph(ecs[i]["grade"]),
-                        Paragraph("{}".format(ecs[i]["mgp"])),
-                    ],
-                )
-                current_l += 1
-                i += 1
-        except Exception:
-            pass
+        for ec in ecs:
+            data.append(
+                [
+                    Paragraph(
+                        ue if ec["ec_code"] == ue else "",
+                        ParagraphStyle(
+                            name="",
+                            fontSize=8,
+                        ),
+                    ),
+                    Paragraph(
+                        ">>>>>>" if ec["ec_code"] == ue else ec["ec_code"],
+                        ParagraphStyle(
+                            name="",
+                            fontSize=8,
+                        ),
+                    ),
+                    Paragraph(ec["ec_label"]),
+                    Paragraph("{}".format(ec["cred"])),
+                    Paragraph("{}".format(ec["cc"])),
+                    Paragraph("{}".format(ec["ef"])),
+                    Paragraph("{}".format(ec["note_20"])),
+                    Paragraph("{}".format(ec["note_100"])),
+                    Paragraph(ec["grade"]),
+                    Paragraph("{}".format(ec["mgp"])),
+                ],
+            )
+            current_l += 1
 
         stylesTable.append(
             ("LINEABOVE", (0, current_l), (3, current_l), 1, colors.black),
@@ -320,18 +339,18 @@ def RN(student: Student, notesData: dict, output):
     data.append(
         [
             Paragraph(
-                "Credit",
+                "Total",
                 ParagraphStyle(name="", textColor="white"),
             ),
-            Paragraph(""),
-            Paragraph(""),
-            Paragraph(""),
             Paragraph(""),
             Paragraph(""),
             Paragraph(
-                "{} / {}".format(notesData["credit_total"], notesData["credits"]),
+                "{}".format(notesData["credits"]),
                 ParagraphStyle(name="", textColor="white"),
             ),
+            Paragraph(""),
+            Paragraph(""),
+            Paragraph(""),
             Paragraph(""),
             Paragraph(""),
         ],
@@ -341,7 +360,7 @@ def RN(student: Student, notesData: dict, output):
     table = Table(
         data,
         colWidths=[
-            1.5 * units.cm,
+            1.6 * units.cm,
             1.6 * units.cm,
             5.7 * units.cm,
             1.6 * units.cm,
@@ -387,9 +406,9 @@ def RN(student: Student, notesData: dict, output):
     )
     elements.append(summary)
 
-    space_h = 180 - current_l * 10
+    space_h = 210 - current_l * 3
     space_h = 0 if space_h < 0 else space_h
-    print(space_h)
+
     elements.append(Spacer(1, space_h))
 
     # footer
