@@ -16,6 +16,7 @@ import {
   NumberInputField,
   NumberInputStepper,
   Select,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useCallback, useRef, useState } from "react";
 import { StudentSimple } from "../../models/student";
@@ -96,6 +97,12 @@ export const FormStudentRN: React.FC<Props> = ({
     }
   }, [loading, onClose, clearCurrentStudent]);
 
+  const validateBackgroundColor = useColorModeValue("black", "white");
+  const validateColor = useColorModeValue("white", "black");
+  const validateBackgroundColorHover = useColorModeValue(
+    "blackAlpha.600",
+    "whiteAlpha.600"
+  );
   return (
     <>
       <Modal
@@ -169,10 +176,14 @@ export const FormStudentRN: React.FC<Props> = ({
 
               <ModalFooter>
                 <Button
-                  colorScheme="blue"
                   mr={3}
                   onClick={handleSubmit}
                   isLoading={loading}
+                  backgroundColor={validateBackgroundColor}
+                  color={validateColor}
+                  _hover={{
+                    backgroundColor: validateBackgroundColorHover,
+                  }}
                 >
                   Valider
                 </Button>

@@ -1,5 +1,6 @@
-import React, { ReactNode, createContext } from "react";
+import React, { ReactNode, createContext, useMemo } from "react";
 import BaseService from "../../services/base";
+import useAuth from "../Auth/hooks";
 
 interface PropsContext {
   base: BaseService;
@@ -12,9 +13,12 @@ export const ServiceContext = createContext<PropsContext>({
   base: new BaseService(),
 });
 const ServiceProvider: React.FC<PropsProvider> = ({ children }) => {
-  //const { user } = useAuth();
+  const { user } = useAuth();
 
-  const base = new BaseService();
+  const base = useMemo(
+    () => (user ? new BaseService(user) : new BaseService()),
+    [user]
+  );
 
   return (
     <ServiceContext.Provider value={{ base }}>

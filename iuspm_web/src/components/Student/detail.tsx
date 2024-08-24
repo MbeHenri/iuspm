@@ -4,8 +4,9 @@ import useService from "../../providers/Service/hooks";
 import { useLoading } from "../../utils/hooks";
 import {
   Box,
-  HStack,
   Heading,
+  List,
+  ListItem,
   Spinner,
   Tab,
   TabList,
@@ -17,6 +18,7 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import StudentNoteList from "./Note/list";
+import { formatDate } from "../../utils/functions";
 
 interface Props {
   uuid: string;
@@ -68,7 +70,7 @@ const StudentDetail: React.FC<Props> = ({ uuid }) => {
   }
 
   return (
-    <Box mt="15vh">
+    <Box>
       <Tabs /* align='end' */>
         <TabList>
           <Tab>Détails</Tab>
@@ -79,34 +81,50 @@ const StudentDetail: React.FC<Props> = ({ uuid }) => {
           <TabPanel>
             {/* <Heading>Informations de l'étudiant</Heading> */}
 
-            <HStack>
-              <Text>Matricule : </Text>
-              <Text>{student.register}</Text>
-            </HStack>
-            <HStack>
-              <Text>Noms et Prenoms : </Text>
-              <Text>{student.name}</Text>
-            </HStack>
-            <HStack>
-              <Text>Filière : </Text>
-              <Text>{student.sector.label}</Text>
-            </HStack>
-            <HStack>
-              <Text>Niveau : </Text>
-              <Text>{student.level}</Text>
-            </HStack>
-            <HStack>
-              <Text>Lieu de naissance : </Text>
-              <Text>{student.birthPlace}</Text>
-            </HStack>
-            <HStack>
-              <Text>Date de naissance : </Text>
-              <Text>{`${student.birthAt}`}</Text>
-            </HStack>
-            <HStack>
-              <Text>Date d'insertion : </Text>
-              <Text>{`${student.insertedAt}`}</Text>
-            </HStack>
+            <List spacing={2}>
+              <ListItem>
+                <Text as={"span"} fontWeight={"bold"}>
+                  Matricule:
+                </Text>
+                {` ${student.register}`}
+              </ListItem>
+              <ListItem>
+                <Text as={"span"} fontWeight={"bold"}>
+                  Noms et Prenoms:
+                </Text>
+                {` ${student.name}`}
+              </ListItem>
+              <ListItem>
+                <Text as={"span"} fontWeight={"bold"}>
+                  Filière :
+                </Text>
+                {` ${student.sector.label}`}
+              </ListItem>
+              <ListItem>
+                <Text as={"span"} fontWeight={"bold"}>
+                  Niveau :
+                </Text>
+                {` ${student.level}`}
+              </ListItem>
+              <ListItem>
+                <Text as={"span"} fontWeight={"bold"}>
+                  Lieu de naissance :
+                </Text>
+                {` ${student.birthPlace}`}
+              </ListItem>
+              <ListItem>
+                <Text as={"span"} fontWeight={"bold"}>
+                  Date de naissance :
+                </Text>
+                {` ${formatDate(student.birthAt)}`}
+              </ListItem>
+              <ListItem>
+                <Text as={"span"} fontWeight={"bold"}>
+                  Date d'insertion :
+                </Text>
+                {` ${formatDate(student.insertedAt, true)}`}
+              </ListItem>
+            </List>
           </TabPanel>
           <TabPanel>
             <StudentNoteList student={student} />

@@ -18,6 +18,7 @@ import {
   Link,
   useDisclosure,
   Center,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { FaBookReader } from "react-icons/fa";
 import { FormStudentRN } from "./form";
@@ -30,6 +31,8 @@ const StudentList = () => {
   const [currentStudent, setCurrentStudent] = useState<StudentSimple | null>(
     null
   );
+
+  const studentColor = useColorModeValue("gray.600", "gray.200");
 
   // chargement du service
   const { base } = useService();
@@ -91,8 +94,12 @@ const StudentList = () => {
               return (
                 <Tr key={i}>
                   <Td>
-                    <Link as={LinkRouter} to={`/student/${st.uuid}`}>
-                      {st.register}
+                    <Link
+                      as={LinkRouter}
+                      to={`/student/${st.uuid}`}
+                      color={studentColor}
+                    >
+                      <Heading size="sm">{st.register}</Heading>
                     </Link>
                   </Td>
                   <Td>{st.name}</Td>
@@ -106,6 +113,7 @@ const StudentList = () => {
                         setCurrentStudent(st);
                         onOpen();
                       }}
+                      variant="ghost"
                     />
                   </Td>
                 </Tr>

@@ -1,6 +1,5 @@
 export interface UserAuth {
-    uuid: string,
-    login: string,
+    username: string,
     token: string,
 }
 

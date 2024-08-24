@@ -4,9 +4,41 @@ import IUSPMRepository from "./repository";
 
 class ProdIUSPMRepository extends IUSPMRepository {
 
-    async createStudentNote(cc: number, ef: number, isNormal: boolean, uuidEC: string, uuidStudent: string) {
+    async connection(username: string, password: string) {
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
+
+        const raw = JSON.stringify({
+            "username": username,
+            "password": password,
+        });
+
+        const requestOptions = {
+            method: "POST",
+            headers: myHeaders,
+            body: raw,
+        };
+
+        return await fetch(`${API_BASE_URL}/api/token/`, requestOptions)
+            .then((response) => {
+
+                if (response.ok) {
+                    return response.json()
+                }
+                throw new Error("Impossible de se connecter" + response.statusText);
+
+            })
+            .then((data) => {
+                return {
+                    access: data.access
+                }
+            })
+    }
+
+    async createStudentNote(cc: number, ef: number, isNormal: boolean, uuidEC: string, uuidStudent: string, token?: string) {
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+        token && myHeaders.append("Authorization", `Bearer ${token}`);
 
         const raw = JSON.stringify({
             "cc": cc,
@@ -42,12 +74,13 @@ class ProdIUSPMRepository extends IUSPMRepository {
             })
     }
 
-    async updateStudentNote(uuid: string, cc: number, ef: number, isNormal: boolean, uuidEC: string, uuidStudent: string) {
+    async updateStudentNote(uuid: string, cc: number, ef: number, isNormal: boolean, uuidEC: string, uuidStudent: string, token?: string) {
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
-        
+        token && myHeaders.append("Authorization", `Bearer ${token}`);
+
         console.log(uuid);
-        
+
 
         const raw = JSON.stringify({
             "id": uuid,
@@ -84,8 +117,9 @@ class ProdIUSPMRepository extends IUSPMRepository {
             })
     }
 
-    async getStudentNotes(uuid: string) {
+    async getStudentNotes(uuid: string, token?: string) {
         const myHeaders = new Headers();
+        token && myHeaders.append("Authorization", `Bearer ${token}`);
 
         const requestOptions = {
             method: "GET",
@@ -124,8 +158,9 @@ class ProdIUSPMRepository extends IUSPMRepository {
             })
     }
 
-    async getStudent(uuid: string) {
+    async getStudent(uuid: string, token?: string) {
         const myHeaders = new Headers();
+        token && myHeaders.append("Authorization", `Bearer ${token}`);
 
         const requestOptions = {
             method: "GET",
@@ -160,8 +195,9 @@ class ProdIUSPMRepository extends IUSPMRepository {
     }
 
 
-    async getStudents() {
+    async getStudents(token?: string) {
         const myHeaders = new Headers();
+        token && myHeaders.append("Authorization", `Bearer ${token}`);
 
         const requestOptions = {
             method: "GET",
@@ -191,8 +227,9 @@ class ProdIUSPMRepository extends IUSPMRepository {
             })
     }
 
-    async getRNGlobal(id: string, year: string) {
+    async getRNGlobal(id: string, year: string, token?: string) {
         const myHeaders = new Headers();
+        token && myHeaders.append("Authorization", `Bearer ${token}`);
 
         const requestOptions = {
             method: "GET",
@@ -212,8 +249,9 @@ class ProdIUSPMRepository extends IUSPMRepository {
         return results
     }
 
-    async getRNSemester(id: string, year: string, semester: Semester) {
+    async getRNSemester(id: string, year: string, semester: Semester, token?: string) {
         const myHeaders = new Headers();
+        token && myHeaders.append("Authorization", `Bearer ${token}`);
 
         const requestOptions = {
             method: "GET",
