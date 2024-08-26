@@ -18,6 +18,7 @@ import {
   NumberInputStepper,
   Radio,
   RadioGroup,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useCallback, useRef, useState } from "react";
 import Student from "../../../models/student";
@@ -191,7 +192,14 @@ export const FormStudentNote: React.FC<Props> = ({
 
           <ModalFooter>
             <Button
-              colorScheme="blue"
+              backgroundColor={useColorModeValue("black", "white")}
+              color={useColorModeValue("white", "black")}
+              _hover={{
+                backgroundColor: useColorModeValue(
+                  "blackAlpha.600",
+                  "whiteAlpha.600"
+                ),
+              }}
               mr={3}
               onClick={handleSubmit}
               isLoading={loading}

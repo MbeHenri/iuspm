@@ -3,9 +3,12 @@ import {
   Button,
   Divider,
   Drawer,
+  DrawerBody,
+  DrawerCloseButton,
   DrawerContent,
   DrawerFooter,
   DrawerHeader,
+  DrawerOverlay,
   Flex,
   HStack,
   Heading,
@@ -15,13 +18,7 @@ import {
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
-import {
-  FaArrowLeft,
-  FaBookOpen,
-  FaHome,
-  FaSignOutAlt,
-  FaUsers,
-} from "react-icons/fa";
+import { FaBookOpen, FaHome, FaSignOutAlt, FaUsers } from "react-icons/fa";
 import { ColorModeSwitcher } from "../../components/utils/ColorModeSwitcher";
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
@@ -83,7 +80,7 @@ const SidebarGlobal: React.FC<Props> = ({ page, children }) => {
                 size="xs"
                 mb={6}
               >
-                MAIN MENU
+                MENU D'ACCEUIL
               </Heading>
               <Button
                 leftIcon={<FaHome />}
@@ -109,7 +106,7 @@ const SidebarGlobal: React.FC<Props> = ({ page, children }) => {
                   navigate("/dashboard");
                 }}
               >
-                DashBoard
+                Tableau de bord
               </Button>
 
               <Button
@@ -136,7 +133,7 @@ const SidebarGlobal: React.FC<Props> = ({ page, children }) => {
                   navigate("/student");
                 }}
               >
-                Student
+                Etudiants
               </Button>
             </Box>
 
@@ -154,42 +151,34 @@ const SidebarGlobal: React.FC<Props> = ({ page, children }) => {
               mt={16}
               onClick={deconnexion}
             >
-              Log out
+              Déconnexion
             </Button>
           </Stack>
           <Box flexGrow={1}>{children}</Box>
         </Flex>
-        <Box display={{ base: "block", md: "none" }}>{children}</Box>
+        <Box display={{ base: "block", md: "none" }} w="100%" h="100%">
+          {children}
+        </Box>
       </Box>
 
-      <Drawer
-        isOpen={isOpen}
-        placement="left"
-        onClose={onClose}
-        returnFocusOnClose={false}
-        onOverlayClick={onClose}
-      >
+      <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
+        <DrawerOverlay />
         <DrawerContent>
+          <DrawerCloseButton />
           <DrawerHeader>
             <HStack justifyContent="space-between">
               <Text>IUSPM</Text>
-              <IconButton
-                aria-label=""
-                icon={<FaArrowLeft />}
-                variant="ghost"
-                onClick={onClose}
-              />
             </HStack>
           </DrawerHeader>
           <Divider />
 
-          <Box pt={10} px={5}>
+          <DrawerBody pt={10} px={5}>
             <Heading
               color={useColorModeValue("blackAlpha.500", "whiteAlpha.500")}
               size="xs"
               mb={6}
             >
-              MAIN MENU
+              MENU D'ACCEUIL
             </Heading>
             <Button
               leftIcon={<FaHome />}
@@ -213,8 +202,9 @@ const SidebarGlobal: React.FC<Props> = ({ page, children }) => {
                 onClose();
                 navigate("/dashboard");
               }}
+              mb={2}
             >
-              DashBoard
+              Tableau de bord
             </Button>
 
             <Button
@@ -239,10 +229,12 @@ const SidebarGlobal: React.FC<Props> = ({ page, children }) => {
                 onClose();
                 navigate("/student");
               }}
+              mb={2}
             >
-              Student
+              Etudiants
             </Button>
-          </Box>
+          </DrawerBody>
+
           <DrawerFooter>
             <Button
               leftIcon={<FaSignOutAlt />}
@@ -257,7 +249,7 @@ const SidebarGlobal: React.FC<Props> = ({ page, children }) => {
               }}
               onClick={deconnexion}
             >
-              Log out
+              Déconnexion
             </Button>
           </DrawerFooter>
         </DrawerContent>
