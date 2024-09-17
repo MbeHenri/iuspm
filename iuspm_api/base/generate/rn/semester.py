@@ -379,22 +379,57 @@ def RN(student: Student, notesData: dict, output):
     elements.append(Spacer(1, 12))
 
     # Informations sur les crédits et la moyenne
-    summaryData = [
-        [
-            Paragraph("RESULTATS EXPRIMES"),
-            "",
-            "",
-            Paragraph("MGP"),
-            Paragraph("GRADE"),
-        ],
-        [
-            Paragraph("Total"),
-            Paragraph("{} /20".format(notesData["moy_total_20"])),
-            Paragraph("{} /100".format(notesData["moy_total_100"])),
-            Paragraph("{}".format(notesData["mgp"])),
-            Paragraph("{}".format(notesData["grade"])),
-        ],
-    ]
+    
+    if notesData["semester"] == 1 :
+        summaryData = [
+            [
+                Paragraph("RESULTATS EXPRIMES"),
+                "",
+                "",
+                Paragraph("MGP"),
+                Paragraph("GRADE"),
+            ],
+            [
+                Paragraph("semestre {}".format(notesData['semester'])),
+                Paragraph("{} /20".format(notesData["moy_total_20"])),
+                Paragraph("{} /100".format(notesData["moy_total_100"])),
+                Paragraph("{}".format(notesData["mgp"])),
+                Paragraph("{}".format(notesData["grade"])),
+            ],
+        ]
+    else:
+        summaryData = [
+            [
+                Paragraph("RESULTATS EXPRIMES"),
+                "",
+                "",
+                Paragraph("MGP"),
+                Paragraph("GRADE"),
+            ],
+            [
+                Paragraph("{}".format(notesData['semester_s2'])),
+                Paragraph("{} /20".format(notesData["moy_total_20"])),
+                Paragraph("{} /100".format(notesData["moy_total_100"])),
+                Paragraph("{}".format(notesData["mgp"])),
+                Paragraph("{}".format(notesData["grade"])),
+            ],
+            [
+                Paragraph("{}".format(notesData['semester_s1'])),
+                Paragraph("{} /20".format(notesData["moy_total_20_s1"])),
+                Paragraph("{} /100".format(notesData["moy_total_100_s1"])),
+                Paragraph("{}".format(notesData["mgp_s1"])),
+                Paragraph("{}".format(notesData["grade_s1"])),
+            ],
+            [
+                Paragraph("{}".format(notesData['semester_all'])),
+                Paragraph("{} /20".format(notesData["moy_total_20_all"])),
+                Paragraph("{} /100".format(notesData["moy_total_100_all"])),
+                Paragraph("{}".format(notesData["mgp_all"])),
+                Paragraph("{}".format(notesData["grade_all"])),
+            ],
+        ]
+        
+    
     summary = Table(summaryData)
     summary.setStyle(
         TableStyle(

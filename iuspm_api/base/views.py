@@ -11,7 +11,8 @@ from rest_framework.decorators import action
 from base.generate.rn import year as rn_total, semester as rn_semester
 from base.models import SchoolYear, Student, Note
 from base.serializers import NoteSerializer, StudentSerializer, StudentDetailSerializer
-from base.utils.other import get_student_notes, get_student_notes_2
+from base.utils.other import get_student_notes, get_student_notes_2, get_student_notes_s2
+from base.utils.enums import Semester
 
 
 class DetailViewSetMixing:
@@ -72,11 +73,15 @@ class StudentViewSet(DetailViewSetMixing, viewsets.ModelViewSet):
             student = self.get_object()
 
             # Récupération de ses notes pour un semestre donné ou pour tous les semestres durant l'année donnée
+            sem = int(semester)
             datas = get_student_notes(
-                student,
-                int(year) if year else datetime.now().year,
-                semester=int(semester) if semester else None,
-            )
+                    student,
+                    int(year) if year else datetime.now().year,
+                    semester = 1,
+                ) if sem == 1 else get_student_notes_s2(
+                    student,
+                    int(year) if year else datetime.now().year
+                )
 
             # creation de la reponse
             response = HttpResponse(content_type="application/pdf")
