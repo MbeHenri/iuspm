@@ -41,7 +41,6 @@ def get_student_base_notes(
             semester=semester,
         )
     else:
-        print("ok")
         ues_programmed = UEProgramming.objects.filter(
             year=school_year,
             speciality__sector=student.sector,
@@ -140,6 +139,7 @@ def get_student_notes(
     return {
         "ues": results,
         "can_group": can_grouping,
+        "s":semester,
         "semester": (niv - 1) * 2 + semester if semester else None,
         "year": "{}".format(school_year),
         "level": niv,
@@ -285,6 +285,7 @@ def get_student_notes_s2(
         "can_group": can_grouping_s2,
         "year": "{}".format(school_year),
         "level": niv,
+        "s": 2,
         
         "semester": semester2,
         "semester_s2": f"semestre {semester2}",

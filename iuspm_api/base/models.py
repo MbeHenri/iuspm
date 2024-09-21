@@ -23,7 +23,7 @@ class Student(models.Model):
     birth_place = models.CharField(max_length=25)
 
     inserted_at = models.DateTimeField(auto_now_add=True)
-    birth_at = models.DateTimeField()
+    birth_at = models.DateField()
     sector = models.ForeignKey(
         Sector, on_delete=models.CASCADE, related_name="students"
     )
@@ -88,10 +88,10 @@ class UEProgramming(models.Model):
 
 class EC(models.Model):
     code = models.CharField(max_length=6, unique=True, blank=True)
-    label = models.CharField(max_length=50)
+    label = models.CharField(max_length=100)
 
     ue = models.ForeignKey(UE, on_delete=models.CASCADE, related_name="ecs")
-    credit = models.IntegerField(default=1)
+    credit = models.FloatField(default=1)
 
     def __str__(self):
         return f"{self.code}: {self.label}"

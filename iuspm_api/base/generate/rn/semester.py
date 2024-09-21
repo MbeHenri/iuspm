@@ -303,18 +303,19 @@ def RN(student: Student, notesData: dict, output):
 
     current_l = 3
     for ue, ecs in notesData["ues"].items():
+        first = True
         for ec in ecs:
             data.append(
                 [
                     Paragraph(
-                        ue if ec["ec_code"] == ue else "",
+                        ue if first else "",
                         ParagraphStyle(
                             name="",
                             fontSize=8,
                         ),
                     ),
                     Paragraph(
-                        ">>>>>>" if ec["ec_code"] == ue else ec["ec_code"],
+                        ec["ec_code"],
                         ParagraphStyle(
                             name="",
                             fontSize=8,
@@ -331,6 +332,7 @@ def RN(student: Student, notesData: dict, output):
                 ],
             )
             current_l += 1
+            first = False
 
         stylesTable.append(
             ("LINEABOVE", (0, current_l), (3, current_l), 1, colors.black),
@@ -379,8 +381,7 @@ def RN(student: Student, notesData: dict, output):
     elements.append(Spacer(1, 12))
 
     # Informations sur les crédits et la moyenne
-    
-    if notesData["semester"] == 1 :
+    if notesData["s"] == 1 :
         summaryData = [
             [
                 Paragraph("RESULTATS EXPRIMES"),
@@ -440,8 +441,7 @@ def RN(student: Student, notesData: dict, output):
         )
     )
     elements.append(summary)
-
-    space_h = 210 - current_l * 3
+    space_h = 210 - current_l * 22
     space_h = 0 if space_h < 0 else space_h
 
     elements.append(Spacer(1, space_h))
@@ -489,6 +489,7 @@ def RN(student: Student, notesData: dict, output):
         ],
     ]
     footer = Table(footerData)
+    
     footer.setStyle(
         TableStyle(
             [
@@ -499,6 +500,46 @@ def RN(student: Student, notesData: dict, output):
         ),
     )
     elements.append(footer)
+    
+    elements.append(Spacer(1, 10))
+    
+    subFooterData = [
+        [
+            Paragraph(
+                "NB: Il n'est délivré q'un seul exemplaire de relevé de notes. Le titulaire peut établir et faire certifier des copies conformes",
+                ParagraphStyle(
+                    name="",
+                    parent = styles["Italic"],
+                    alignment=enums.TA_CENTER,
+                    fontSize=4,
+                ),
+            ),
+        ],
+        [
+            Paragraph(
+                "Only one transcript should be delivered. It is in the owner's interest to make certified true copie",
+                ParagraphStyle(
+                    name="",
+                    parent = styles["Italic"],
+                    alignment=enums.TA_CENTER,
+                    fontSize=4,
+                ),
+            ),
+        ],
+    ]
+    
+    subFooter = Table(subFooterData)
+    
+    subFooter.setStyle(
+        TableStyle(
+            [
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+            ]
+        ),
+    )
+    elements.append(subFooter)
 
     # Générer le PDF
     doc.build(elements)
